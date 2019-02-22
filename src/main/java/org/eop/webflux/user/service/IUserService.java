@@ -13,11 +13,11 @@ public interface IUserService {
 
 	Mono<User> addUser(Mono<User> user);
 	
-	User modifyUser(Mono<User> user);
+	Mono<User> modifyUser(Mono<User> user);
 	
-	User removeUser(Mono<String> id);
+	Mono<User> removeUser(Mono<String> id);
 	
-	User getUser(Mono<String> id);
+	Mono<User> getUser(Mono<String> id);
 	
 	Flux<User> listUsers();
 }

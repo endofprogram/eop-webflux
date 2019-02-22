@@ -1,7 +1,5 @@
 package org.eop.webflux.user.handler;
 
-import java.util.List;
-
 import org.eop.webflux.user.bean.User;
 import org.eop.webflux.user.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,16 +28,21 @@ public class UserHandler {
 	}
 	
 	public Mono<ServerResponse> modifyUser(ServerRequest request) {
-		return Mono.empty();
+		Mono<User> user = extractUser(request);
+		Mono<User> u = userService.modifyUser(user);
+		return cramUser(u);
 	}
 	
 	public Mono<ServerResponse> removeUser(ServerRequest request) {
 		Mono<String> id = extractId(request);
-		return Mono.empty();
+		Mono<User> u = userService.removeUser(id);
+		return cramUser(u);
 	}
 
 	public Mono<ServerResponse> getUser(ServerRequest request) {
-		return Mono.empty();
+		Mono<String> id = extractId(request);
+		Mono<User> u = userService.getUser(id);
+		return cramUser(u);
 	}
 	
 	public Mono<ServerResponse> listUsers(ServerRequest request) {
@@ -48,7 +51,7 @@ public class UserHandler {
 	}
 	
 	private Mono<String> extractId(ServerRequest request) {
-		return request.formData().map(map -> map.getFirst("id"));
+		return Mono.just(request.pathVariable("id"));
 	}
 	
 	private Mono<User> extractUser(ServerRequest request) {

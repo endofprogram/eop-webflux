@@ -22,27 +22,46 @@ public class UserServiceImpl implements IUserService {
 	
 	@Override
 	public Mono<User> addUser(Mono<User> user) {
-		return user.doOnNext(u -> users.add(u));
+		return user.doOnNext(u -> {
+			users.add(u);
+			u.setName(u.getName());
+		});
 	}
 
 	@Override
-	public User modifyUser(Mono<User> user) {
-		return null;
+	public Mono<User> modifyUser(Mono<User> user) {
+		return user.doOnNext(u -> {
+			Optional<User> userOpt = users.stream().filter(us -> us.getId().equals(u.getId())).findFirst();
+			if (userOpt.isPresent()) {
+				User ur = userOpt.get();
+				ur.setName(u.getName());
+			}
+		});
 	}
 
 	@Override
-	public User removeUser(Mono<String> id) {
-		User user = userById(id);
-		if (user == null) {
-			return null;
-		}
-		users.remove(user);
-		return user;
+	public Mono<User> removeUser(Mono<String> id) {
+		return id.map(uid -> {
+			Optional<User> userOpt = users.stream().filter(user -> user.getId().equals(uid)).findFirst();
+			if (userOpt.isPresent()) {
+				users.remove(userOpt.get());
+				return userOpt.get();
+			}
+			User du = new User();
+			du.setId(uid);
+			du.setName("没有该用户");
+			return du;
+		});
 	}
 
 	@Override
-	public User getUser(Mono<String> id) {
-		return userById(id);
+	public Mono<User> getUser(Mono<String> id) {
+		return id.map(uid -> {
+			User du = new User();
+			du.setId(uid);
+			du.setName("没有该用户");
+			return users.stream().filter(user -> user.getId().equals(uid)).findFirst().orElse(du);
+		});
 	}
 
 	@Override
@@ -50,8 +69,4 @@ public class UserServiceImpl implements IUserService {
 		return Flux.fromIterable(users);
 	}
 
-	private User userById(Mono<String> id) {
-		Optional<User> userOpt = users.stream().filter(user -> user.getId().equals(id)).findFirst();
-		return userOpt.isPresent() ? userOpt.get() : null;
-	}
 }
