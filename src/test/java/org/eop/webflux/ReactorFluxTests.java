@@ -5,47 +5,49 @@ import java.time.Duration;
 import java.time.LocalTime;
 import java.util.concurrent.TimeUnit;
 
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 /**
  * @author lixinjie
  * @since 2019-02-24
  */
-public class ReactorTests {
+public class ReactorFluxTests {
 
 	public static void main(String[] args) {
 		displayCurrTime(1);
 		displayCurrThreadId(1);
-		//创建一个数据源
-		Mono.just(10)
-			//延迟5秒再发射数据
-			.delayElement(Duration.ofSeconds(5))
-			//在数据上执行一个转换
+		//创建一个数据源（数据流）
+		Flux.fromArray(new Integer[]{5, 4, 3, 2, 1})
+			.delaySequence(Duration.ofSeconds(3))
 			.map(n -> {
-				displayCurrTime(2);
-				displayCurrThreadId(2);
+				displayCurrTime(6);
+				displayCurrThreadId(6);
 				displayValue(n);
-				delaySeconds(2);
+				delaySeconds(1);
 				return n + 1;
 			})
-			//在数据上执行一个过滤
 			.filter(n -> {
-				displayCurrTime(3);
-				displayCurrThreadId(3);
+				displayCurrTime(7);
+				displayCurrThreadId(7);
 				displayValue(n);
-				delaySeconds(3);
+				delaySeconds(1);
 				return n % 2 == 0;
 			})
-			//如果数据没了就用默认值
-			.defaultIfEmpty(9)
-			//订阅一个消费者把数据消费了
-			.subscribe(n -> {
-				displayCurrTime(4);
-				displayCurrThreadId(4);
+			.reduce(0, (sum, n) -> {
+				displayCurrTime(8);
+				displayCurrThreadId(8);
 				displayValue(n);
-				delaySeconds(2);
-				System.out.println(n + " consumed, worker Thread over, exit.");
+				delaySeconds(1);
+				return sum + n;
+			})
+			.subscribe(sum -> {
+				displayCurrTime(9);
+				displayCurrThreadId(9);
+				displayValue(sum);
+				delaySeconds(1);
+				System.out.println(sum + " consumed, worker Thread over, exit.");
 			});
+		
 		displayCurrTime(5);
 		displayCurrThreadId(5);
 		pause();

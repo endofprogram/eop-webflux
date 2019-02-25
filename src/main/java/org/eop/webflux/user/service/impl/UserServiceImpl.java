@@ -24,7 +24,6 @@ public class UserServiceImpl implements IUserService {
 	public Mono<User> addUser(Mono<User> user) {
 		return user.doOnNext(u -> {
 			users.add(u);
-			u.setName(u.getName());
 		});
 	}
 
